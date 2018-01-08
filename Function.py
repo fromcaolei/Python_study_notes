@@ -116,4 +116,20 @@ f2(*args, **kw)
 
 
 print('\n\n\033[0;31;40m-4--------递归函数----------------------------------------------------\033[0m')
+#在函数内部调用自身为递归函数，若函数只调用自身，return语句中不含表达式，则称之为尾递归函数，Python未做尾递归优化，所以一样
+def fact1(n):  #使用递归函数计算n!=1x2x3x...xn
+    if n == 1:
+        return 1
+    return n * fact1(n - 1)  #含乘法表达式，不是尾递归
+print(fact1(10))
+
+def fact2(n):
+    return fact_iter(n, 1)
+
+def fact_iter(num, product):
+    if num == 1:
+        return product
+    return fact_iter(num - 1, num * product)  #属于尾递归，使用fact2(1000)还是栈溢出
+print(fact2(5))
+
 
