@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 print('\n\n\033[0;31;40m-1--------切片-------------------------------------------------\033[0m')
 #切片，一种截取list、tuple、字符串等类型的操作符':'，类似C#中Substring()
 L = list(range(11))
@@ -63,5 +66,44 @@ print([s.lower() for s in L])
 
 
 print('\n\n\033[0;31;40m-4--------生成器-----------------------------------------------\033[0m')
+#这种用法可以使大量数据一边循环生成，一边使用，这种机制称为生成器：generator
+#tuple可以使用列表生成式生成一些简单的generator，也可以在函数中使用yield关键字生成复杂的generator
+g = (x * x for x in range(10))
+print(g)
+print(next(g))  #使用next()函数或for循环迭代的方式动态的生成g和使用g内部的内容
+print(next(g))
+for n in g:
+    print(n)  #前面使用两个print调用过g所以这里的print中不会出现generator中的前两个成员
 
 
+def fib(max):  #斐波那契数列，使用yield关键字生成复杂generator:
+    n, a, b = 0, 0, 1
+    while n < max:
+        yield b  #代码每次遇到yield就返回，如同return，但当再次next()调用或迭代，就从这里继续执行
+        a, b = b, a + b  #等同于a = b, b = a + b
+        n = n + 1
+    return 'done'
+
+for n in fib(6):
+    print(n)  #迭代到最后会拿不到'done'的返回值，需要捕获StopIteration错误中的value
+
+g = fib(6)  #不能讲fib(6)卸载while内部，不然会无限创建generator，不同于上边的for循环只创建一次
+while True:
+    try:
+        print(next(g))
+    except StopIteration as e:  #捕获StopIteration
+        print('Generator return value:', e.value)
+        break
+
+
+
+print('\n\n\033[0;31;40m-5--------迭代器-----------------------------------------------\033[0m')
+#可用for循环迭代的对象称之为可迭代对象iterable
+#既可以用for循环迭代的，也可以使用next()函数迭代的对象成为迭代器iterator
+
+from collections import Iterable
+from collections import Iterator
+print(isinstance([], Iterable))  #查看对象是否为可迭代对象
+print(isinstance((x for x in range(10)), Iterator))  #查看对象是否为迭代器
+
+print(isinstance(iter([]),Iterator))  #iter()函数可以讲一个可迭代对象变换为迭代器
