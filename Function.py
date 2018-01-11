@@ -98,8 +98,8 @@ person2('jack', 24, city = 'Beijing', job = 'Engineer')
 
 #参数组合，参数定义的顺序必须时：必选参数、默认参数、可变参数、命名关键字参数、关键字参数
 #一种特殊用法：
-def f1(a, b, c=0, *args, **kw):
-    print('a =', a, 'b =', b, 'c =', c, 'args =', args, 'kw =', kw)
+def f1(a, b, c=0, *args, **x):
+    print('a =', a, 'b =', b, 'c =', c, 'args =', args, 'kw =', x)
 
 def f2(a, b, c=0, *, d, **kw):
     print('a =', a, 'b =', b, 'c =', c, 'd =', d, 'kw =', kw)
