@@ -51,3 +51,63 @@ list2 = ['bob', 'about', 'Zoo', 'Credit']
 print(sorted(list2))
 print(sorted(list2, key = str.lower))
 print(sorted(list2, key = str.lower, reverse = True))
+
+
+
+print('\n\n\033[0;31;40m-6--------返回函数--------------------------------------------\033[0m')
+#使用函数作为返回值，在一个函数内部定义另一个函数，然后大函数返回里面定义的函数对象。这种程序结构成“闭包”，调用这个大函数返回值时，需要带上括号。
+def lazy_sum(*args):
+    def sum():
+        ax = 0
+        for n in args:  #注意返回闭包时，不要使用大函数中的任何循环变量，否则容易失误总是调用到该变量的最后一个值
+            ax = ax + n
+        return ax
+    return sum
+
+f = lazy_sum(1, 3, 5, 7, 9)
+print(f)
+print(f())
+
+
+
+print('\n\n\033[0;31;40m-7--------匿名函数--------------------------------------------\033[0m')
+#lambda即匿名函数，函数只能有一个表达式，不用写return，返回该表达式的结果。
+l = lambda x: x * x
+print(l(4))
+
+print(list(map(lambda x: x * x, [1, 2, 3, 4, 5, 6, 7, 8, 9])))
+
+
+
+print('\n\n\033[0;31;40m-8--------装饰器----------------------------------------------\033[0m')
+#要增强函数的功能，又不希望修改函数的定义，这种在代码运行期间动态增加功能的方式成为“装饰器”decorator。本质上是返回函数的高阶函数。
+import functools
+def log(func):
+    @functools.wraps(func)  #添加此行可以不修改传入函数的__name__参数
+    def wrapper(*args, **kw):
+        print('call %s():' % func.__name__)
+        return func(*args, **kw)
+    return wrapper
+
+@log  #一种使用decorator的语法，使用@将decorator置于函数的定义处
+def now():
+    print('2018-1-14')
+
+now()  #调用函数时，会先执行decorator,等同于now = log(now)
+print(now.__name__)  #会修改now()函数的__name__参数
+
+
+
+print('\n\n\033[0;31;40m-8--------偏函数----------------------------------------------\033[0m')
+#自定义一个函数对象，将另一个函数的参数或命名关键字参数绑定默认值后，传入自定义的函数中，方便二次掉用形参一样的情况。
+print(int('7B', base = 16))  #base默认值为10,16代表以16进制数解码'7B'
+
+import functools
+int16 = functools.partial(int, base = 16)
+print(int16('7B'))  #偏函数会讲int函数的参数值绑定后，赋予函数对象int16
+
+#偏函数还可以默认传入位置型参数
+max2 = functools.partial(max, 10)
+print(max2(5, 6, 7))  #等同于调用max(10, 5, 6, 7)
+int2 = functools.partial(int, '20')
+print(int2())  #会打印20
