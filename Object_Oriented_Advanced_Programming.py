@@ -147,4 +147,12 @@ class Weekday(Enum):
 
 print('\n\n\033[0;31;40m-7--------使用元类-----------------------------------------\033[0m')
 #动态与静态语言最大的不同是函数了类的定义，是在运行时动态创建的，而不是编译时定义的
+#type()函数，可以查看一个变量的类型，可以以用来创建类。实际上Python在运行时，仅仅是扫描一下class定义的语法，然后调用type()函数创建类
+def fn(self, name = 'world'):  #先定义函数
+    print('Hello, %s.' % name)
 
+Hello = type('Hello', (object,), dict(hello = fn))  #创建Hello类
+h = Hello()
+h.hello()
+
+#metaclass为元类，目前无法掌握，也基本不会用到
