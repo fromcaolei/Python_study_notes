@@ -23,7 +23,7 @@ def my_abs(x):
 
 print(my_abs(-22))  #调用方式还可以是在Python交互环境中，使用from 文件名 import 函数名    可以将这个函数载入终端环境，然后执行调用，会在当前路径下生成一个__pycache__
 
-#定义空函数，使用pass语句定义一个什么都不做的函数，pass可以在判断语句中做占位符
+#定义空函数，使用pass语句执行空操作，pass可以在判断语句中做占位符
 def nop():
     pass
 
