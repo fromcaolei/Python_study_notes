@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-## -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 print('\n\n\033[0;31;40m-1--------进程和线程------------------------------------\033[0m')
 print('\n\n\033[0;31;40m-2--------多进程---------------------------------------\033[0m')
@@ -98,49 +98,3 @@ if __name__=='__main__':
     p.start()
     p.join()  #join()方法可以等待子进程结束后再继续往下运行，通常用于进程间的同步
     print('Child process end.')
-
-print('\n\n\033[0;31;40m-3--------多线程---------------------------------------\033[0m')
-#
-import time, threading
-
-# 新线程执行的代码:
-def loop():
-    print('thread %s is running...' % threading.current_thread().name)
-    n = 0
-    while n < 5:
-        n = n + 1
-        print('thread %s >>> %s' % (threading.current_thread().name, n))
-        time.sleep(1)
-    print('thread %s ended.' % threading.current_thread().name)
-
-print('thread %s is running...' % threading.current_thread().name)  #current_thread()函数返回当前线程的实例
-t = threading.Thread(target=loop, name='LoopThread')  #用LoopThread命名子线程
-t.start()
-t.join()  #若不使用join()函数，则两个线程一起执行
-print('thread %s ended.' % threading.current_thread().name)
-
-
-
-
-import time, threading
-
-# 假定这是你的银行存款:
-balance = 0
-
-def change_it(n):
-    # 先存后取，结果应该为0:
-    global balance
-    balance = balance + n
-    balance = balance - n
-
-def run_thread(n):
-    for i in range(100000):
-        change_it(n)
-
-t1 = threading.Thread(target=run_thread, args=(5,))
-t2 = threading.Thread(target=run_thread, args=(8,))
-t1.start()
-t2.start()
-t1.join()
-t2.join()
-print(balance)
