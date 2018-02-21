@@ -124,3 +124,32 @@ b'\xe4\xb8\xad\xe6\x96\x87'
 ```
 
 使用``%``实现格式化，和C语言类似。补3个0使用%03d，补2个空格使用%2d，小数保留2位%.2f，使用%s会把任何数据转换成字符串，使用%%会打印%本身。
+
+
+关于Python虚拟化环境virtualenv
+-----------------------------
+
+用于多个Python应用程序独立运行于不同的系统环境时使用（如：jinja2.7、jinja2.6）
+先安装这个虚拟化工具：
+
+```shell
+pip3 install virtualenv
+```
+
+然后在所需目录下创建一个独立的Python运行环境
+
+```shell
+virtualenv --no-site-packages [environ_name]
+```
+
+进入该环境，即可在该环境下独立配置所需版本的模块或环境：
+
+```shell
+source [environ_name]/bin/activate
+```
+
+退出该环境：
+
+```shell
+deactivate
+```
