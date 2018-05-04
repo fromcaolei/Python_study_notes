@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__author__ = 'Michael Liao'
-
 import asyncio, logging
 
 import aiomysql
@@ -28,6 +26,13 @@ def create_pool(loop, **kw):
         loop=loop
     )
 
+
+async def destory_pool():  #销毁数据库连接池
+    global __pool
+    if __pool is not None:
+        __pool.close()
+        await __pool.wait_closed()
+
 @asyncio.coroutine
 #查询语句，第一个参数为sql语句,第二个为sql语句中占位符的参数列表,第三个参数是要查询数据的数量，返回值为多维元组
 def select(sql, args, size=None):
@@ -39,7 +44,9 @@ def select(sql, args, size=None):
         if size:
             rs = yield from cur.fetchmany(size)  #fetchmany函数用于设置获得表中的多少数据使用
         else:
-            rs = yield from cur.fetchall()  #fetchall函数返回所有结果，多维tuple，如(('id','title'),('id','title')),
+            rs = yield from cur.fetchall()  #fetchall函数返回所有结果，返回一个list,数组元素为dict，如：
+            #[{'email': 'test@example.com', 'created_at': 1525444258.3016, 'id': '0015254442583013e5d5e5bc96546b8a4d625a8aad532ca000', 'admin': 0, 'passwd': '1234567890', 'name': 'Test', 'image': 'about:blank'}, 
+            # {'email': 'dflhuang@qq.com', 'created_at': 1525444379.29146, 'id': '110', 'admin': 0, 'passwd': '0123', 'name': 'dflhuang', 'image': 'about:blank'}]
         yield from cur.close()
         logging.info('rows returned: %s' % len(rs))
         return rs  #多维tuple，查询到的数据结果
@@ -153,7 +160,7 @@ class ModelMetaclass(type):
 
 class Model(dict, metaclass=ModelMetaclass):
 
-    def __init__(self, **kw):若调用一个不存在的键，则弹出这个默认值
+    def __init__(self, **kw):
         super(Model, self).__init__(**kw)  #继承了dict类，构造时也调用了这个父类的构造函数，就会在创建对象时，要求你输入字典形式的参数列表
 
     def __getattr__(self, key):  #对调用到不存在的属性或函数时，会调用该函数，若该属性在类中已经是键值对，则该方法可通过下标[key]来取值（言简意赅的说，就是通过该函数实现了用点语法(".")获取字典中某键的值）
@@ -180,7 +187,7 @@ class Model(dict, metaclass=ModelMetaclass):
 
     @classmethod  #这个修饰器可是这个函数调用可通过类名直接调用，而不需要生成对象去调用，即定义类的类方法
     @asyncio.coroutine
-    def findAll(cls, where=None, args=None, **kw):  #第一个参数表示自身类
+    def findAll(cls, where=None, args=None, **kw):  #执行select语句，第一个参数表示自身类
         ' find objects by where clause. '
         sql = [cls.__select__]
         if where:
@@ -204,11 +211,14 @@ class Model(dict, metaclass=ModelMetaclass):
             else:
                 raise ValueError('Invalid limit value: %s' % str(limit))
         rs = yield from select(' '.join(sql), args)  #一上代码配合类中原有的select语句，追加where及之后语句，时sql查询语句完整，异步调用select()函数获得结果多维tuple
-        return [cls(**r) for r in rs]  #！！！这个列表生成式表示没看懂cls(**r)的结果是什么？？？
+        return [cls(**r) for r in rs]  # **r 是关键字参数，构成了一个cls类的列表，其实就是每一条记录对应的类实例  
+#查询出来的表类似这样：
+#[{'email': 'test@example.com', 'created_at': 1525444258.3016, 'id': '0015254442583013e5d5e5bc96546b8a4d625a8aad532ca000', 'admin': 0, 'passwd': '1234567890', 'name': 'Test', 'image': 'about:blank'}, 
+# {'email': 'dflhuang@qq.com', 'created_at': 1525444379.29146, 'id': '110', 'admin': 0, 'passwd': '0123', 'name': 'dflhuang', 'image': 'about:blank'}]
 
     @classmethod
     @asyncio.coroutine
-    def findNumber(cls, selectField, where=None, args=None):
+    def findNumber(cls, selectField, where=None, args=None):  #计算某一列的数目，selectField可传入count(column_name)，别名为_num_
         ' find number by select and where. '
         sql = ['select %s _num_ from `%s`' % (selectField, cls.__table__)]
         if where:
@@ -221,23 +231,23 @@ class Model(dict, metaclass=ModelMetaclass):
 
     @classmethod
     @asyncio.coroutine
-    def find(cls, pk):
+    def find(cls, pk):  #用主键查找一行数据，pk为sql语句中占位符的参数列表
         ' find object by primary key. '
         rs = yield from select('%s where `%s`=?' % (cls.__select__, cls.__primary_key__), [pk], 1)
         if len(rs) == 0:
             return None
-        return cls(**rs[0])
+        return cls(**rs[0])  #返回一条记录，以dict的形式返回，因为cls的夫类继承了dict类
 
     @asyncio.coroutine
-    def save(self):
-        args = list(map(self.getValueOrDefault, self.__fields__))
-        args.append(self.getValueOrDefault(self.__primary_key__))
-        rows = yield from execute(self.__insert__, args)
+    def save(self):  #插入一行数据
+        args = list(map(self.getValueOrDefault, self.__fields__))  #通过"列属性名"把非主键列的"列属性"做成list
+        args.append(self.getValueOrDefault(self.__primary_key__))  #主键的追加后边
+        rows = yield from execute(self.__insert__, args)  #执行插入语句
         if rows != 1:
             logging.warn('failed to insert record: affected rows: %s' % rows)
 
     @asyncio.coroutine
-    def update(self):
+    def update(self):  #更新一行数据
         args = list(map(self.getValue, self.__fields__))
         args.append(self.getValue(self.__primary_key__))
         rows = yield from execute(self.__update__, args)
@@ -245,8 +255,16 @@ class Model(dict, metaclass=ModelMetaclass):
             logging.warn('failed to update by primary key: affected rows: %s' % rows)
 
     @asyncio.coroutine
-    def remove(self):
+    def remove(self):  #删除一行数据
         args = [self.getValue(self.__primary_key__)]
         rows = yield from execute(self.__delete__, args)
         if rows != 1:
             logging.warn('failed to remove by primary key: affected rows: %s' % rows)
+
+
+#以下为测试
+# loop = asyncio.get_event_loop()
+# loop.run_until_complete(create_pool(host='127.0.0.1', port=3306,user='root', password='toor',db='awesome', loop=loop))
+# rs = loop.run_until_complete(select('select * from users',None))
+# #获取到了数据库返回的数据
+# print(rs)
