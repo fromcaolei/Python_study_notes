@@ -4,6 +4,12 @@
 print('\n\n\033[0;31;40m-1--------使用mysql------------------------\033[0m')
 #先安装MySQL驱动
 #sudo pip install mysql-connector-python --allow-external mysql-connector-python
+#允许mysql远程连接
+#mysql -u root -p
+#use mysql;
+#update user set host = '%' where user = 'root';
+#select host,user from user;  --查看root用户的host列是否被改为%，允许root用户远程登录
+#sudo vi /etc/mysql/mysql.conf.d/mysqld.cnf  #注释bind-address		= 127.0.0.1行，重启mysql服务完成
 
 '''
 import mysql.connector

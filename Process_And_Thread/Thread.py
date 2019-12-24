@@ -9,16 +9,19 @@ import time, threading
 def loop():
     print('thread %s is running...' % threading.current_thread().name)
     n = 0
-    while n < 2:
+    while n < 5:
         n = n + 1
         print('thread %s >>> %s' % (threading.current_thread().name, n))
         time.sleep(1)
     print('thread %s ended.' % threading.current_thread().name)
 
 print('thread %s is running...' % threading.current_thread().name)  #current_thread()函数返回当前线程的实例
-t = threading.Thread(target=loop, name='LoopThread')  #使用threading.Thread()函数创建新线程，用LoopThread命名子线程
-t.start()
-t.join()  #若不使用join()函数，则两个线程一起执行
+t1 = threading.Thread(target=loop, name='LoopThread1')  #使用threading.Thread()函数创建新线程，用LoopThread命名子线程
+t2 = threading.Thread(target=loop, name='LoopThread2')  #使用threading.Thread()函数创建新线程，用LoopThread命名子线程
+t1.start()
+t2.start()
+t1.join()  #若不使用join()函数，则两个线程一起执行
+t2.join()
 print('thread %s ended.\n' % threading.current_thread().name)
 
 
